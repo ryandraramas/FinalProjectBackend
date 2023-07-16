@@ -1,57 +1,62 @@
-require('dotenv').config()
+require('dotenv').config();
 
-const express = require('express')
-const mongoose = require('mongoose')
-const cors = require('cors') // Import the cors middleware
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
 
-const pelangganRoutes = require('./routes/pelanggan')
-// const paymentsRoutes = req('./routes/payments')
-
-const artRoutes = require('./routes/ART')
+const pelangganRoutes = require('./routes/pelanggan');
+const mitraRoutes = require('./routes/Mitra');
 const jobPostRoutes = require('./routes/JobPost');
+const adminRoutes = require('./routes/Admin');
 
-// express app
-const app = express()
+const app = express();
 
-// middleware
-app.use(express.json())
+app.use(express.json());
+app.use(cors());
 
+// Additional middleware for React Native requests
 app.use((req, res, next) => {
   if (req.headers['user-agent'] === 'Your-React-Native-User-Agent') {
-    console.log('Request from React Native application')
+    console.log('Request from React Native application');
     // Additional handling for requests from React Native
   } else {
-    console.log('Request from other sources')
+    console.log('Request from other sources');
     // Default handling for requests from other sources
   }
-  next()
-})
+  next();
+});
 
-// Enable CORS for all routes
-app.use(cors())
-
-// routes
-app.use('/api/pelanggan', pelangganRoutes)
-// app.use('/api/pelanggan/payments', paymentsRoutes)
-
-app.use('/api/AsistenRumahTangga', artRoutes)
-app.use('/api/AsistenRumahTangga/JobPost', jobPostRoutes);
-
-
-// connect to db
-mongoose.connect(process.env.MONGO_URI)
+// Connect to the MongoDB database
+mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => {
-    // listening for requests
     app.listen(process.env.PORT, () => {
-      console.log('Connected to Database & Listening on Port', process.env.PORT)
-    })
+      console.log(`Connected to Database & Listening on Port ${process.env.PORT}`);
+    });
   })
   .catch((error) => {
-    console.log(error)
-  })
+    console.log(error);
+    process.exit(1); // Terminate the application if unable to connect to the database
+  });
+
+// Routes
+app.use('/api/pelanggan', pelangganRoutes); // Routes for pelanggan
+app.use('/api/mitra', mitraRoutes); // Routes for mitra
+app.use('/api/mitra/jobPosts', jobPostRoutes); // Routes for job posts
+app.use('/api/admin', adminRoutes); // Routes for admin
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack)
-  res.status(500).json({ error: 'Something went wrong' })
-})
+  console.error(err.stack);
+  res.status(500).json({ error: 'Something went wrong' });
+});
+
+// Handle unhandled rejections and uncaught exceptions
+process.on('unhandledRejection', (err) => {
+  console.error('Unhandled Rejection:', err);
+  process.exit(1);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+  process.exit(1);
+});

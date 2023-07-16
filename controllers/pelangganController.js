@@ -1,4 +1,5 @@
-require('dotenv').config()
+// FOLDER NAME controllers FILE NAME pelangganController.js
+require('dotenv').config();
 
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
@@ -27,7 +28,7 @@ const getPelanggan = async (req, res) => {
   }
 };
 
-const createPelanggan = async (req, res) => {
+const registerPelanggan = async (req, res) => {
   try {
     const {
       date,
@@ -50,11 +51,40 @@ const createPelanggan = async (req, res) => {
       password: hashedPassword,
     });
 
-    const token = jwt.sign({ pelangganId: pelanggan._id }, process.env.ACCESS_TOKEN_KEY, { expiresIn: '1h' });
+    const token = jwt.sign({ pelangganId: pelanggan._id }, process.env.ACC_TOKEN, { expiresIn: '1h' });
 
     res.status(201).json({ pelanggan, token });
   } catch (error) {
     res.status(400).json({ error: error.message });
+  }
+};
+
+const loginPelanggan = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Find the pelanggan by email
+    const pelanggan = await Pelanggan.findOne({ email });
+
+    if (!pelanggan) {
+      // Pelanggan not found
+      return res.status(404).json({ error: 'Pelanggan not found' });
+    }
+
+    // Compare the provided password with the hashed password
+    const isPasswordValid = await bcrypt.compare(password, pelanggan.password);
+
+    if (!isPasswordValid) {
+      // Invalid password
+      return res.status(401).json({ error: 'Invalid password' });
+    }
+
+    // Generate the access token
+    const token = jwt.sign({ id: pelanggan._id }, process.env.ACC_TOKEN, { expiresIn: '1h' });
+
+    res.status(200).json({  token, pelanggan_id: pelanggan._id });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -101,7 +131,8 @@ const updatePelanggan = async (req, res) => {
 module.exports = {
   getPelanggans,
   getPelanggan,
-  createPelanggan,
+  registerPelanggan, 
+  loginPelanggan, 
   deletePelanggan,
   updatePelanggan,
 };

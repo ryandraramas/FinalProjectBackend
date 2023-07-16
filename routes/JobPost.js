@@ -1,22 +1,26 @@
-// JobPost.js
-
 const express = require('express');
 const router = express.Router();
-const JobPostController = require('../controllers/JobPostController');
+const { 
+  createJobPost, 
+  getAllJobPosts, 
+  getJobPostById, 
+  updateJobPost, 
+  deleteJobPost 
+} = require('../controllers/JobPostController');
 
 // Create a new job post
-router.post('/jobPosts', JobPostController.createJobPost);
+router.post('/', createJobPost);
 
 // Get all job posts
-router.get('/jobPosts', JobPostController.getAllJobPosts);
+router.get('/', getAllJobPosts);
 
 // Get a single job post by ID
-router.get('/jobPosts/:id', JobPostController.getJobPostById);
+router.get('/:id', getJobPostById);
 
 // Update a job post by ID
-router.put('/jobPosts/:id', JobPostController.updateJobPost);
+router.put('/:id', updateJobPost);
 
 // Delete a job post by ID
-router.delete('/jobPosts/:id', JobPostController.deleteJobPost);
+router.delete('/:id', deleteJobPost);
 
 module.exports = router;

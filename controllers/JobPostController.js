@@ -1,14 +1,24 @@
 const multer = require('multer');
+const fs = require('fs');
 const JobPostModel = require('../models/JobPostModel');
 
 // Multer configuration
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'uploads/');
+    const uploadDir = 'uploads/';
+    // Create directory if it doesn't exist
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir);
+    }
+    cb(null, uploadDir);
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(null, file.fieldname + '-' + uniqueSuffix);
+    // Get the file extension
+    const fileExtension = file.originalname.split('.').pop().toLowerCase();
+    // Create the formatted filename with extension
+    const formattedFilename = file.fieldname + '-' + uniqueSuffix + '.' + fileExtension;
+    cb(null, formattedFilename);
   },
 });
 
@@ -23,28 +33,53 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({ storage: storage, fileFilter: fileFilter });
 
 // Create a new job post
-exports.createJobPost = [
-  upload.single('foto'),
-  (req, res, next) => {
+exports.createJobPost = (req, res, next) => {
+  upload.single('foto')(req, res, (err) => {
+    if (err instanceof multer.MulterError) {
+      // Error uploading file
+      return res.status(500).json({ error: 'Failed to upload file' });
+    } else if (err) {
+      // Other error
+      return res.status(500).json({ error: err.message });
+    }
+
     const { deskripsi, category, salary } = req.body;
+
+    // Remove commas from salary and replace the dot separators
+    const formattedSalary = salary.replace(/,/g, '').replace(/\./g, '');
+
     const foto = req.file.filename;
 
     const jobPost = new JobPostModel({
       deskripsi: deskripsi,
       category: category,
       foto: foto,
-      salary: salary,
+      salary: formattedSalary,
     });
 
-    jobPost.save((err, savedJobPost) => {
-      if (err) {
+    jobPost
+      .save()
+      .then((savedJobPost) => {
+        // Add dot separators back to the salary before sending the response
+        const formattedSavedJobPost = {
+          ...savedJobPost._doc,
+          salary: formatSalary(savedJobPost.salary),
+        };
+        return res.status(201).json(formattedSavedJobPost);
+      })
+      .catch((error) => {
         return res.status(500).json({ error: 'Failed to create JobPost' });
-      }
+      });
+  });
+};
 
-      return res.status(201).json(savedJobPost);
-    });
-  },
-];
+// Function to format the salary value with dot separators
+const formatSalary = (salary) => {
+  return salary.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+};
+
+
+
 
 // Get all job posts
 exports.getAllJobPosts = (req, res) => {
@@ -63,7 +98,7 @@ exports.getJobPostById = (req, res) => {
 
   JobPostModel.findById(jobId, (err, jobPost) => {
     if (err) {
-      return res.status(500).json({ error: 'Failed to get JobPost' });
+      return res.status(500).json({ error });
     }
 
     if (!jobPost) {

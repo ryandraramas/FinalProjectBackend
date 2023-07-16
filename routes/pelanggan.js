@@ -1,27 +1,32 @@
-const express = require('express')
+// FOLDER NAME ROUTES FILE NAME pelanggan.js
+const express = require('express');
 const {
-    getPelanggans,
-    getPelanggan,    
-    createPelanggan,
-    deletePelanggan,
-    updatePelanggan
-} = require('../controllers/pelangganController')
+  getPelanggans,
+  getPelanggan,
+  registerPelanggan, 
+  loginPelanggan, 
+  deletePelanggan,
+  updatePelanggan,
+} = require('../controllers/pelangganController');
 
-const router = express.Router()
+const router = express.Router();
 
 // GET all Pelanggan
-router.get('/', getPelanggans)
+router.get('/', getPelanggans);
 
 // GET a single Pelanggan
-router.get('/:id', getPelanggan)
+router.get('/:id', getPelanggan);
 
-// POST a new Pelanggan
-router.post('/', createPelanggan)
+// POST register
+router.post('/register', registerPelanggan);
+
+// POST login
+router.post('/login', loginPelanggan); // Add login route
 
 // DELETE a Pelanggan
-router.delete('/:id', deletePelanggan)
+router.delete('/:id', deletePelanggan);
 
 // UPDATE a Pelanggan
-router.patch('/:id', updatePelanggan)
+router.patch('/:id', updatePelanggan);
 
-module.exports = router
+module.exports = router;
