@@ -80,9 +80,24 @@ const loginPelanggan = async (req, res) => {
     }
 
     // Generate the access token
-    const token = jwt.sign({ id: pelanggan._id }, process.env.ACC_TOKEN, { expiresIn: '1h' });
+    const tokenPayload = {
+      id: pelanggan._id,
+      name: pelanggan.name,
+      address: pelanggan.address,
+      email: pelanggan.email,
+      phoneNumber: pelanggan.phoneNumber
+    };
 
-    res.status(200).json({  token, pelanggan_id: pelanggan._id });
+    const token = jwt.sign(tokenPayload, process.env.ACC_TOKEN, { expiresIn: '1h' });
+
+    res.status(200).json({
+      token,
+      pelanggan_id: pelanggan._id,
+      name: pelanggan.name,
+      address: pelanggan.address,
+      email: pelanggan.email,
+      phoneNumber: pelanggan.phoneNumber
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

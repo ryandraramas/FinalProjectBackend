@@ -19,27 +19,27 @@ const storage = multer.diskStorage({
   },
 });
 
-// // File Filter
-// const fileFilter = (req, file, cb) => {
-//   if (
-//     file.mimetype === 'image/jpeg' ||
-//     file.mimetype === 'image/png' ||
-//     file.mimetype === 'image/jpg'
-//   ) {
-//     cb(null, true);
-//   } else {
-//     cb(new Error('Invalid file type'));
-//   }
-// };
+// File Filter
+const fileFilter = (req, file, cb) => {
+  if (
+    file.mimetype === 'image/jpeg' ||
+    file.mimetype === 'image/png' ||
+    file.mimetype === 'image/jpg'
+  ) {
+    cb(null, true);
+  } else {
+    cb(new Error('Invalid file type'));
+  }
+};
 
-// // Upload Middleware
-// const upload = multer({
-//   storage: storage,
-//   limits: {
-//     fileSize: 1024 * 1024 * 5, // 5MB
-//   },
-//   fileFilter: fileFilter,
-// }).single('foto');
+// Upload Middleware
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 1024 * 1024 * 5, // 5MB
+  },
+  fileFilter: fileFilter,
+}).single('foto');
 
 // Login Functionality
 const loginMitra = async (req, res) => {
@@ -58,12 +58,37 @@ const loginMitra = async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    const token = jwt.sign({ id: mitra._id }, process.env.ACC_TOKEN, { expiresIn: '1h' });
+    const tokenPlayload = {
+      id: mitra.id,
+      name: mitra.name,
+      address: mitra.address,
+      email: mitra.email,
+      phoneNumber: mitra.phoneNumber,
+      foto : mitra.foto,
+      deskripsi: mitra.deskripsi,
+      salary: mitra.salary,
+      category: mitra.category,
+      date: mitra.date
+    }
 
-    res.status(200).json({ token, mitra_id: mitra._id, email });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+    const token = jwt.sign(tokenPlayload, process.env.ACC_TOKEN, { expiresIn: '1h' });
+
+      res.status(200).json({
+      token,
+      id: mitra.id,
+      name: mitra.name,
+      address: mitra.address,
+      email: mitra.email,
+      phoneNumber: mitra.phoneNumber,
+      foto : mitra.foto,
+      deskripsi: mitra.deskripsi,
+      salary: mitra.salary,
+      category: mitra.category,
+      date: mitra.date
+      })
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
 };
 
 // Register Functionality
@@ -163,13 +188,13 @@ const updateMitra = async (req, res) => {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(404).json({ error: 'No such Mitra' });
+      return res.status(404).json({ error });
     }
 
     const mitra = await Mitra.findByIdAndUpdate(id, req.body, { new: true });
 
     if (!mitra) {
-      return res.status(404).json({ error: 'No such Mitra' });
+      return res.status(404).json({ error });
     }
 
     res.status(200).json(mitra);

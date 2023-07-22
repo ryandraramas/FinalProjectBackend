@@ -1,38 +1,28 @@
 const mongoose = require('mongoose');
 
-// Definisikan skema untuk pembayaran
 const paymentSchema = new mongoose.Schema({
-  items: { 
-    type: String, 
-    required: true 
-},
-  deliveryLocation: { 
-    type: String, 
-    required: true 
-},
-  paymentMethod: { 
-    type: String, 
-    required: true 
-},
-  subtotal: { 
+  buktiTransfer: {
+    type: String,
+    required: true,
+  },
+  totalHarga: {
     type: Number,
-    required: true 
-},
-  appFee: { 
-    type: Number, 
-    required: true 
-},
-  discount: { 
-    type: Number, 
-    required: true
-},
-  total: { 
-    type: Number, 
-    required: true 
-},
+    required: true,
+  },
+  durasi: {
+    type: String,
+    required: true,
+  },
+  tanggalTransfer: {
+    type: Date,
+    required: true,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
-// Buat model Payment menggunakan skema yang telah didefinisikan
 const Payment = mongoose.model('Payment', paymentSchema);
 
 module.exports = Payment;

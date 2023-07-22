@@ -1,17 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const paymentsController = require('../controllers/paymentsController');
 
-// Create a new payment
-router.post('/api/pelanggan/payments', paymentsController.createPayment);
+const paymentController = require('../controllers/paymentsController');
 
-// Delete a payment
-router.delete('/api/pelanggan/payments/:paymentId', paymentsController.deletePayment);
-
-// Get all payments
-router.get('/api/pelanggan/payments', paymentsController.getAllPayments);
-
-// Get a single payment
-router.get('/api/pelanggan/payments/:paymentId', paymentsController.getPayment);
+router.post('/', paymentController.createPayment);
+router.get('/', paymentController.getAllPayments);
+router.get('/:id', paymentController.getPaymentById);
 
 module.exports = router;

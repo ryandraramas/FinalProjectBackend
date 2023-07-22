@@ -15,7 +15,7 @@ const mitraSchema = new Schema(
     email: {
       type: String,
       required: true,
-      unique: true, // Added unique constraint for email
+      unique: true, 
     },
     address: {
       type: String,
@@ -38,7 +38,7 @@ const mitraSchema = new Schema(
       required: true,
     },
     salary: {
-      type: String,
+      type: Number,
       required: true,
     },
     foto: {

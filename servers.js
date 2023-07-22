@@ -1,30 +1,21 @@
-require('dotenv').config();
-
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const dotenv = require('dotenv');
+
+dotenv.config();
 
 const pelangganRoutes = require('./routes/pelanggan');
-const mitraRoutes = require('./routes/Mitra');
-const jobPostRoutes = require('./routes/JobPost');
-const adminRoutes = require('./routes/Admin');
+const mitraRoutes = require('./routes/mitra');
+const jobPostRoutes = require('./routes/jobPost');
+const adminRoutes = require('./routes/admin');
+const paymentsRoutes = require('./routes/payments');
 
 const app = express();
 
+app.use(express.static('uploads'));
 app.use(express.json());
 app.use(cors());
-
-// Additional middleware for React Native requests
-app.use((req, res, next) => {
-  if (req.headers['user-agent'] === 'Your-React-Native-User-Agent') {
-    console.log('Request from React Native application');
-    // Additional handling for requests from React Native
-  } else {
-    console.log('Request from other sources');
-    // Default handling for requests from other sources
-  }
-  next();
-});
 
 // Connect to the MongoDB database
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
@@ -39,10 +30,11 @@ mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopol
   });
 
 // Routes
-app.use('/api/pelanggan', pelangganRoutes); // Routes for pelanggan
-app.use('/api/mitra', mitraRoutes); // Routes for mitra
-app.use('/api/mitra/jobPosts', jobPostRoutes); // Routes for job posts
-app.use('/api/admin', adminRoutes); // Routes for admin
+app.use('/api/pelanggan', pelangganRoutes);
+app.use('/api/mitra', mitraRoutes);
+app.use('/api/mitra/jobPosts', jobPostRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/payments', paymentsRoutes); // Correct the path for paymentsRoutes
 
 // Error handling middleware
 app.use((err, req, res, next) => {
