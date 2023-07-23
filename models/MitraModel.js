@@ -48,7 +48,7 @@ const mitraSchema = new Schema(
     status: {
         type: String,
         enum: ['Available', 'Unvailable'],
-        default: 'Unvailable',
+        default: 'Available'
       },
   },
   { timestamps: true }

@@ -3,12 +3,9 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const Mitra = require('../models/MitraModel');
-
-// Multer Configuration
 const multer = require('multer');
 const path = require('path');
 
-// Storage Engine
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, 'uploads/');
@@ -19,7 +16,6 @@ const storage = multer.diskStorage({
   },
 });
 
-// File Filter
 const fileFilter = (req, file, cb) => {
   if (
     file.mimetype === 'image/jpeg' ||
@@ -32,7 +28,6 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-// Upload Middleware
 const upload = multer({
   storage: storage,
   limits: {
@@ -87,18 +82,18 @@ const loginMitra = async (req, res) => {
       date: mitra.date
       })
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: 'Internal server error' });
     }
-};
+  };
 
 // Register Functionality
 const registerMitra = async (req, res) => {
-  upload(req, res, async (err) => {
-    if (err) {
-      console.log(err);
-      return res.status(400).json({ error: err.message });
-    }
-    try {
+  try {
+    upload(req, res, async (err) => {
+      if (err) {
+        return res.status(400).json({ error });
+      }
+
       const { date, name, email, address, phoneNumber, password, deskripsi, category, salary } = req.body;
 
       const existingMitra = await Mitra.findOne({ email });
@@ -110,8 +105,11 @@ const registerMitra = async (req, res) => {
 
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      const formattedSalary = salary.replace(/,/g, '').replace(/\./g, '');
-      
+      const foto = req.file ? req.file.filename : null; 
+      if (!foto) {
+        return res.status(400).json({ error: 'Image is required' });
+      }
+
       const mitra = new Mitra({
         date: new Date(date),
         name,
@@ -121,8 +119,8 @@ const registerMitra = async (req, res) => {
         password: hashedPassword,
         deskripsi,
         category,
-        salary: formattedSalary, 
-        foto: req.file.filename, 
+        salary, 
+        foto, 
       });
 
       const savedMitra = await mitra.save();
@@ -130,12 +128,12 @@ const registerMitra = async (req, res) => {
       const token = jwt.sign({ id: savedMitra._id }, process.env.ACC_TOKEN, { expiresIn: '1h' });
 
       res.status(201).json({ token, mitra: savedMitra });
-    } catch (error) {
-      console.log(error.message);
-      res.status(500).json({ error: error.message });
-    }
-  });
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
 };
+
 
 // Get all Mitra
 const getMitras = async (req, res) => {
@@ -143,7 +141,7 @@ const getMitras = async (req, res) => {
     const mitras = await Mitra.find({}).sort({ createdAt: -1 });
     res.status(200).json(mitras);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
 
@@ -212,7 +210,38 @@ const updateStatusMitra = async (req, res) => {
       return res.status(404).json({ error: 'No such Mitra' });
     }
 
-    const mitra = await Mitra.findByIdAndUpdate(id, { status }, { new: true });
+    const mitra = await Mitra.findById(id);
+
+    if (!mitra) {
+      return res.status(404).json({ error: 'No such Mitra' });
+    }
+
+    if (status === 'Unavailable') {
+      // If the new status is "Unavailable", hide the data
+      const hiddenMitra = await Mitra.findByIdAndUpdate(id, { status: 'Unvailable' }, { new: true });
+      res.status(200).json(hiddenMitra);
+    } else {
+      // For any other status, update the status without hiding the data
+      const updatedMitra = await Mitra.findByIdAndUpdate(id, { status: status }, { new: true });
+      res.status(200).json(updatedMitra);
+    }
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+
+
+
+const hideMitra = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(404).json({ error: 'No such Mitra' });
+    }
+
+    const mitra = await Mitra.findByIdAndUpdate(id, { status: 'Hidden' }, { new: true });
 
     if (!mitra) {
       return res.status(404).json({ error: 'No such Mitra' });
@@ -232,4 +261,5 @@ module.exports = {
   deleteMitra,
   updateMitra,
   updateStatusMitra,
+  hideMitra,
 };

@@ -36,11 +36,16 @@ const upload = multer({
 const createPayment = async (req, res) => {
   upload(req, res, async (err) => {
     if (err) {
-      return res.status(400).json({ message: err.message });
+      return res.status(400).json({ error });
     }
 
     const { totalHarga, durasi } = req.body;
     const buktiTransfer = req.file ? req.file.path : '';
+
+    // Check if totalHarga is a valid number (you can add more validation if needed)
+    if (isNaN(totalHarga)) {
+      return res.status(400).json({ message: 'Invalid totalHarga value.' });
+    }
 
     // Gunakan moment untuk menghasilkan tanggal saat ini
     const tanggalTransfer = moment().toDate();
@@ -62,6 +67,7 @@ const createPayment = async (req, res) => {
     }
   });
 };
+
 
 const getAllPayments = async (req, res) => {
   try {

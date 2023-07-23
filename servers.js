@@ -6,7 +6,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const pelangganRoutes = require('./routes/pelanggan');
-const mitraRoutes = require('./routes/mitra');
+const mitraRoutes = require('./routes/Mitra');
 const jobPostRoutes = require('./routes/jobPost');
 const adminRoutes = require('./routes/admin');
 const paymentsRoutes = require('./routes/payments');
