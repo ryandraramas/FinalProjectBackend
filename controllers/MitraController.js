@@ -59,32 +59,34 @@ const loginMitra = async (req, res) => {
       address: mitra.address,
       email: mitra.email,
       phoneNumber: mitra.phoneNumber,
-      foto : mitra.foto,
+      foto: mitra.foto,
       deskripsi: mitra.deskripsi,
       salary: mitra.salary,
       category: mitra.category,
+      status: mitra.status,
       date: mitra.date
     }
 
     const token = jwt.sign(tokenPlayload, process.env.ACC_TOKEN, { expiresIn: '1h' });
 
-      res.status(200).json({
+    res.status(200).json({
       token,
       id: mitra.id,
       name: mitra.name,
       address: mitra.address,
       email: mitra.email,
       phoneNumber: mitra.phoneNumber,
-      foto : mitra.foto,
+      foto: mitra.foto,
       deskripsi: mitra.deskripsi,
       salary: mitra.salary,
       category: mitra.category,
+      status: mitra.status,
       date: mitra.date
-      })
-    } catch (error) {
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  };
+    })
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
 
 // Register Functionality
 const registerMitra = async (req, res) => {
@@ -105,7 +107,7 @@ const registerMitra = async (req, res) => {
 
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      const foto = req.file ? req.file.filename : null; 
+      const foto = req.file ? req.file.filename : null;
       if (!foto) {
         return res.status(400).json({ error: 'Image is required' });
       }
@@ -119,8 +121,8 @@ const registerMitra = async (req, res) => {
         password: hashedPassword,
         deskripsi,
         category,
-        salary, 
-        foto, 
+        salary,
+        foto,
       });
 
       const savedMitra = await mitra.save();
