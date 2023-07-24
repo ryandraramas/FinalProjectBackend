@@ -10,6 +10,7 @@ const mitraRoutes = require('./routes/Mitra');
 const jobPostRoutes = require('./routes/jobPost');
 const adminRoutes = require('./routes/admin');
 const paymentsRoutes = require('./routes/payments');
+const notificationRoutes = require('./routes/Notification');
 
 const app = express();
 
@@ -35,6 +36,7 @@ app.use('/api/mitra', mitraRoutes);
 app.use('/api/mitra/jobPosts', jobPostRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/payments', paymentsRoutes); // Correct the path for paymentsRoutes
+app.use('/api/notifications', notificationRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
