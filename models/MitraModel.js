@@ -49,7 +49,7 @@ const mitraSchema = new Schema(
         type: String,
         enum: ['Available', 'Unvailable'],
         default: 'Available'
-      },
+    },
   },
   { timestamps: true }
 );

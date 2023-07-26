@@ -1,12 +1,31 @@
 const mongoose = require('mongoose');
 
 const paymentSchema = new mongoose.Schema({
-  buktiTransfer: {
+  // String Name
+  namaPelanggan: {
     type: String,
     required: true,
   },
-  totalHarga: {
-    type: Number,
+  namaMitra: {
+    type: String,
+    required: true,
+  },
+  // String Address
+  alamatPelanggan: {
+    type: String,
+    required: true,
+  },
+  alamatMitra: {
+    type: String,
+    required: true,
+  },
+  // String starttoend
+  startedAt: {
+    type: String,
+    required: true,
+  },
+  endedAt: {
+    type: String,
     required: true,
   },
   durasi: {
@@ -17,10 +36,29 @@ const paymentSchema = new mongoose.Schema({
     type: Date,
     required: true,
   },
+  // Number of total
+  totalHarga: {
+    type: Number,
+    required: true,
+  },
+  fotoMitra: {
+    type: String,
+    required: true,
+  },
+  buktiTransfer: {
+    type: String,
+    required: true,
+  },
   createdAt: {
     type: Date,
     default: Date.now,
   },
+  // String Status
+  status: {
+    type: String,
+    enum: ['Pending', 'Terbayarkan'],
+    default: 'Pending'
+},
 });
 
 const Payment = mongoose.model('Payment', paymentSchema);

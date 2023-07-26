@@ -13,7 +13,6 @@ const storage = multer.diskStorage({
   },
 });
 
-// Membuat middleware multer untuk memproses upload file
 const upload = multer({
   storage: storage,
   limits: {
@@ -31,16 +30,35 @@ const upload = multer({
       cb(new Error('Invalid file type. Only images are allowed.'));
     }
   },
-}).single('buktiTransfer');
+}).fields([
+  { name: 'buktiTransfer', maxCount: 1 },
+  { name: 'fotoMitra', maxCount: 1 },
+]);
 
 const createPayment = async (req, res) => {
   upload(req, res, async (err) => {
     if (err) {
-      return res.status(400).json({ error });
+      // Use the 'err' parameter instead of 'error'
+      console.error(err);
+      return res.status(400).json({ error: err.message });
     }
 
-    const { totalHarga, durasi } = req.body;
-    const buktiTransfer = req.file ? req.file.path : '';
+    const {
+      namaMitra, 
+      namaPelanggan, 
+      alamatPelanggan, 
+      alamatMitra, 
+      startedAt, 
+      endedAt, 
+      totalHarga, 
+      durasi } = req.body;
+
+      const buktiTransferFile = req.files['buktiTransfer'][0];
+      const fotoMitraFile = req.files['fotoMitra'][0]; 
+      
+      const buktiTransferPath = buktiTransferFile ? buktiTransferFile.path : '';
+      const fotoMitraPath = fotoMitraFile ? fotoMitraFile.path : '';
+      
 
     // Check if totalHarga is a valid number (you can add more validation if needed)
     if (isNaN(totalHarga)) {
@@ -52,10 +70,17 @@ const createPayment = async (req, res) => {
 
     try {
       const payment = new Payment({
-        buktiTransfer,
-        totalHarga,
+        namaPelanggan, 
+        namaMitra, 
+        alamatPelanggan, 
+        alamatMitra, 
+        startedAt, 
+        endedAt,
         durasi,
         tanggalTransfer,
+        totalHarga,
+        fotoMitra: fotoMitraPath,
+        buktiTransfer: buktiTransferPath,
       });
 
       const savedPayment = await payment.save();
@@ -63,7 +88,7 @@ const createPayment = async (req, res) => {
       res.status(201).json(savedPayment);
     } catch (error) {
       console.error(error);
-      res.status(500).json({ message: 'Failed to create payment' });
+      res.status(500).json({ message });
     }
   });
 };
@@ -94,8 +119,34 @@ const getPaymentById = async (req, res) => {
   }
 };
 
+const updatePaymentStatus = async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  try {
+    // Find the payment by ID
+    const payment = await Payment.findById(id);
+
+    if (!payment) {
+      return res.status(404).json({ message: 'Payment not found' });
+    }
+
+    // Update the payment status
+    payment.status = status;
+    
+    // Save the updated payment
+    const updatedPayment = await payment.save();
+
+    res.json(updatedPayment);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Failed to update payment status' });
+  }
+};
+
 module.exports = {
   createPayment,
   getAllPayments,
   getPaymentById,
+  updatePaymentStatus,
 };
