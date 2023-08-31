@@ -1,9 +1,8 @@
 const Payment = require('../models/paymentsModel');
 const multer = require('multer');
 const path = require('path');
-const moment = require('moment'); // Import Moment package
+const moment = require('moment');
 
-// Konfigurasi multer untuk menyimpan file di folder "uploads"
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, 'uploads/');
@@ -19,7 +18,6 @@ const upload = multer({
     fileSize: 1024 * 1024 * 5, // Batas ukuran file 5 MB
   },
   fileFilter: function (req, file, cb) {
-    // Hanya menerima file gambar dengan ekstensi .png, .jpg, atau .jpeg
     if (
       file.mimetype === 'image/png' ||
       file.mimetype === 'image/jpg' ||
@@ -38,7 +36,6 @@ const upload = multer({
 const createPayment = async (req, res) => {
   upload(req, res, async (err) => {
     if (err) {
-      // Use the 'err' parameter instead of 'error'
       console.error(err);
       return res.status(400).json({ error: err.message });
     }
@@ -49,7 +46,6 @@ const createPayment = async (req, res) => {
       alamatPelanggan, 
       alamatMitra, 
       startedAt, 
-      endedAt, 
       totalHarga, 
       durasi } = req.body;
 
@@ -59,13 +55,9 @@ const createPayment = async (req, res) => {
       const buktiTransferPath = buktiTransferFile ? buktiTransferFile.path : '';
       const fotoMitraPath = fotoMitraFile ? fotoMitraFile.path : '';
       
-
-    // Check if totalHarga is a valid number (you can add more validation if needed)
     if (isNaN(totalHarga)) {
       return res.status(400).json({ message: 'Invalid totalHarga value.' });
     }
-
-    // Gunakan moment untuk menghasilkan tanggal saat ini
     const tanggalTransfer = moment().toDate();
 
     try {
@@ -74,8 +66,7 @@ const createPayment = async (req, res) => {
         namaMitra, 
         alamatPelanggan, 
         alamatMitra, 
-        startedAt, 
-        endedAt,
+        startedAt,
         durasi,
         tanggalTransfer,
         totalHarga,

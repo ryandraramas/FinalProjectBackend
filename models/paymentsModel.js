@@ -24,10 +24,6 @@ const paymentSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  endedAt: {
-    type: String,
-    required: true,
-  },
   durasi: {
     type: String,
     required: true,
